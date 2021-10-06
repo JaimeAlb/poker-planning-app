@@ -7,6 +7,7 @@ export const Routes = {
   "GET    /customGet/{id}": "src/customGet.main", 
   "PUT    /notes/{id}": "src/update.main",
   "DELETE /notes/{id}": "src/delete.main",
+  "POST   /billing": "src/billing.main",
 }
 //  tareas:
 //  1) mover el objeto de routes a otro archivo (lo que te dije)
