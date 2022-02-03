@@ -6,6 +6,7 @@ import Form from "react-bootstrap/Form";
 import LoaderButton from "../components/LoaderButton";
 import config from "../config";
 import "./Notes.css";
+import { s3Upload } from "../lib/awsLib";
 
 export default function Notes() {
   const [isLoading, setIsLoading] = useState(false);
@@ -53,21 +54,59 @@ export default function Notes() {
     file.current = event.target.files[0];
   }
 
+  function saveNote(note) {
+    return API.put("notes", `/notes/${id}`, {
+      body: note
+    });
+  }
+  
   async function handleSubmit(event) {
     let attachment;
-
+  
     event.preventDefault();
-
+  
     if (file.current && file.current.size > config.MAX_ATTACHMENT_SIZE) {
       alert(
-        `Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE /
-        1000000} MB.`
+        `Please pick a file smaller than ${
+          config.MAX_ATTACHMENT_SIZE / 1000000
+        } MB.`
       );
       return;
     }
-
+  
     setIsLoading(true);
+  
+    try {
+      if (file.current) {
+        attachment = await s3Upload(file.current);
+      }
+  
+      await saveNote({
+        content,
+        attachment: attachment || note.attachment
+      });
+      history.push("/");
+    } catch (e) {
+      onError(e);
+      setIsLoading(false);
+    }
   }
+
+  // async function handleSubmit(event) {
+  //   let attachment;
+
+  //   event.preventDefault();
+
+  //   if (file.current && file.current.size > config.MAX_ATTACHMENT_SIZE) {
+  //     alert(
+  //       `Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE /
+  //       1000000} MB.`
+  //     );
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  // }
 
   async function handleDelete(event) {
     event.preventDefault();
